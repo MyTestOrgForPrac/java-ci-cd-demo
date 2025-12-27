@@ -18,9 +18,7 @@ pipeline {
 
         stage('Build & Test') {
             steps {
-                sh '''
-                  mvn clean verify
-                '''
+                sh 'mvn clean verify'
             }
         }
 
@@ -32,7 +30,14 @@ pipeline {
 
         stage('Publish Coverage') {
             steps {
-                jacoco execPattern: 'target/jacoco.exec'
+                publishHTML(target: [
+                    reportDir: 'target/site/jacoco',
+                    reportFiles: 'index.html',
+                    reportName: 'JaCoCo Coverage',
+                    keepAll: true,
+                    alwaysLinkToLastBuild: true,
+                    allowMissing: false
+                ])
             }
         }
     }
