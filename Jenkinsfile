@@ -1,8 +1,16 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'maven:3.9.2-openjdk-17-slim' // Linux Maven image with JDK
+            label 'docker-enabled-agent'        // Node must have Docker installed
+            args '-v /var/run/docker.sock:/var/run/docker.sock' // Allows Docker-in-Docker
+        }
+    }
 
-    tools {
-        maven 'maven-3.9'
+    environment {
+        DOCKER_CREDS = credentials('docker-hub') // Jenkins credentials ID
+        IMAGE_NAME = "java-ci-cd-demo:latest"    // Docker image name
+        REGISTRY = "docker.io"                    // Optional registry prefix
     }
 
     options {
@@ -38,6 +46,23 @@ pipeline {
                     alwaysLinkToLastBuild: true,
                     allowMissing: false
                 ])
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                echo "Building Docker image: ${env.IMAGE_NAME}"
+                sh "docker build -t ${env.IMAGE_NAME} ."
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                echo "Logging in and pushing Docker image"
+                sh """
+                    echo "$DOCKER_CREDS_PSW" | docker login -u "$DOCKER_CREDS_USR" --password-stdin
+                    docker push ${env.IMAGE_NAME}
+                """
             }
         }
     }
