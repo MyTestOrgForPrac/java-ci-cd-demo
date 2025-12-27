@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'maven:3.9.2-openjdk-17-slim' // Linux Maven image with JDK
+            image 'eclipse-temurin:17-jdk-alpine' // Linux Maven image with JDK
             label 'windows-docker-agent'        // Node must have Docker installed
             args '-v /var/run/docker.sock:/var/run/docker.sock' // Allows Docker-in-Docker
         }
